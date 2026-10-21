@@ -1,0 +1,2103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrandLink — Trusted Creator & Brand Collaboration Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Supabase JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --surface-color: rgba(255, 255, 255, 0.75);
+            --surface-hover: rgba(241, 245, 249, 0.85);
+            --border-color: rgba(226, 232, 240, 0.85);
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --accent: #0f172a;
+            --accent-blue: #4f46e5;
+            --accent-glow: rgba(79, 70, 229, 0.14);
+            --cyan: #06b6d4;
+            --pink: #ec4899;
+            --purple: #8b5cf6;
+            --success: #16a34a;
+            --shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            --shadow-sm: 0 10px 25px rgba(0, 0, 0, 0.04);
+            --transition: all 0.25s ease-in-out;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+            line-height: 1.5;
+        }
+
+        /* --- AMBIENT BACKGROUND GRAPHICS --- */
+        .bg-graphics {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -2;
+            pointer-events: none;
+            overflow: hidden;
+            background-image: radial-gradient(rgba(100, 116, 139, 0.08) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+
+        .blob {
+            position: absolute;
+            filter: blur(80px);
+            opacity: 0.55;
+            border-radius: 50%;
+            animation: floatBlob 15s infinite alternate ease-in-out;
+        }
+
+        .blob-1 {
+            top: -10%;
+            left: -10%;
+            width: 550px;
+            height: 550px;
+            background: rgba(79, 70, 229, 0.16);
+        }
+
+        .blob-2 {
+            bottom: -15%;
+            right: -10%;
+            width: 650px;
+            height: 650px;
+            background: rgba(56, 189, 248, 0.14);
+            animation-delay: -5s;
+        }
+
+        .blob-3 {
+            top: 45%;
+            left: 50%;
+            width: 450px;
+            height: 450px;
+            background: rgba(236, 72, 153, 0.09);
+            transform: translate(-50%, -50%);
+            animation-delay: -10s;
+        }
+
+        @keyframes floatBlob {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, -40px) scale(1.08); }
+        }
+
+        /* Navigation Bar */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.1rem 6%;
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+        }
+
+        .logo-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--accent);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+            flex: none;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--text-primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-links button, .nav-links a {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 0.92rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: var(--transition);
+            padding: 0.4rem 0.2rem;
+        }
+
+        .nav-links button:hover, .nav-links a:hover {
+            color: var(--accent-blue);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .nav-login-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .nav-login-btn:hover {
+            background: rgba(15, 23, 42, 0.05);
+            border-color: #cbd5e1;
+        }
+
+        .nav-cta {
+            background: var(--accent);
+            color: #ffffff;
+            padding: 0.65rem 1.4rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            transition: var(--transition);
+            box-shadow: 0 6px 16px rgba(15, 23, 42, 0.15);
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .nav-cta:hover {
+            background: #1e293b;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(15, 23, 42, 0.22);
+        }
+
+        .hamburger-btn {
+            display: none;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            padding: 0.5rem;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-primary);
+        }
+
+        /* Mobile Nav Drawer */
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            top: 70px;
+            left: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.5rem 6%;
+            flex-direction: column;
+            gap: 1rem;
+            z-index: 999;
+            box-shadow: var(--shadow);
+        }
+
+        .mobile-nav.open {
+            display: flex;
+        }
+
+        .mobile-nav button {
+            text-align: left;
+            padding: 0.75rem 0;
+            border: none;
+            background: transparent;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+        }
+
+        /* View Containers */
+        .view-container {
+            display: none;
+            padding-top: 80px;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .view-container.active {
+            display: block;
+        }
+
+        /* ==========================================================================
+           LANDING PAGE SECTIONS
+           ========================================================================== */
+
+        /* HERO SECTION */
+        .hero-section {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            align-items: center;
+            padding: 4.5rem 6% 6rem 6%;
+            max-width: 1350px;
+            margin: 0 auto;
+            gap: 3.5rem;
+            min-height: calc(100vh - 80px);
+            position: relative;
+        }
+
+        .hero-content {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            text-align: left;
+            position: relative;
+            z-index: 5;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.45rem 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: var(--accent-blue);
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.08);
+            backdrop-filter: blur(10px);
+        }
+
+        .hero-section h1 {
+            font-size: clamp(2.4rem, 4vw, 4.2rem);
+            font-weight: 800;
+            line-height: 1.12;
+            letter-spacing: -1.5px;
+            margin-bottom: 1.25rem;
+            color: var(--text-primary);
+        }
+
+        .hero-section h1 span {
+            background: linear-gradient(135deg, var(--accent-blue), #ec4899);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-section p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 540px;
+            margin-bottom: 2.25rem;
+            line-height: 1.7;
+        }
+
+        .hero-cta-group {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-primary {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.95rem 2.2rem;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.18);
+        }
+
+        .cta-primary:hover {
+            background: #1e293b;
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(15, 23, 42, 0.24);
+        }
+
+        .cta-secondary {
+            background: rgba(255, 255, 255, 0.85);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 0.95rem 1.8rem;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .cta-secondary:hover {
+            border-color: #cbd5e1;
+            background: #f8fafc;
+            transform: translateY(-2px);
+        }
+
+        .hero-trust-row {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            margin-top: 2.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(226, 232, 240, 0.8);
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .trust-avatars {
+            display: flex;
+        }
+
+        .trust-avatars img {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            margin-left: -10px;
+            object-fit: cover;
+        }
+
+        .trust-avatars img:first-child {
+            margin-left: 0;
+        }
+
+        .trust-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .trust-text strong {
+            color: var(--text-primary);
+            font-weight: 800;
+        }
+
+        /* Hero Graphic Collage */
+        .hero-graphic-container {
+            position: relative;
+            width: 100%;
+            height: 520px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .glass-orb {
+            position: absolute;
+            width: 360px;
+            height: 360px;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.12), rgba(236, 72, 153, 0.12));
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(12px);
+            z-index: 2;
+        }
+
+        .creator-node {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid rgba(255, 255, 255, 1);
+            border-radius: 18px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            padding: 0.85rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            z-index: 3;
+            backdrop-filter: blur(12px);
+            animation: floatNode 6s ease-in-out infinite alternate;
+        }
+
+        .creator-node img {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            object-fit: cover;
+        }
+
+        .creator-info h4 {
+            font-size: 0.95rem;
+            font-weight: 800;
+        }
+
+        .creator-info span {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .floating-badge-card {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(255, 255, 255, 1);
+            border-radius: 14px;
+            padding: 0.75rem 1.25rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06);
+            font-size: 0.85rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            z-index: 4;
+            backdrop-filter: blur(10px);
+        }
+
+        .node-1 { top: 8%; left: 0%; animation-delay: 0s; }
+        .node-2 { bottom: 12%; right: 0%; animation-delay: 2s; }
+        .card-analytics { top: 12%; right: -2%; animation: floatNode 7s ease-in-out infinite alternate-reverse; color: var(--success); }
+        .card-contract { bottom: 20%; left: -2%; animation: floatNode 8s ease-in-out infinite alternate; color: var(--accent-blue); }
+
+        @keyframes floatNode {
+            0% { transform: translateY(0px) rotate(0deg); }
+            100% { transform: translateY(-12px) rotate(1deg); }
+        }
+
+        /* Social Proof & Brand Logos Bar */
+        .social-proof {
+            position: relative;
+            padding: 3rem 6%;
+            background: rgba(248, 250, 252, 0.8);
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+            z-index: 2;
+        }
+
+        .social-proof-label {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+        }
+
+        .brand-logos {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 3.5rem;
+            flex-wrap: wrap;
+            opacity: 0.65;
+            font-weight: 800;
+            font-size: 1.15rem;
+            letter-spacing: 1px;
+            color: var(--text-primary);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .brand-logos span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        /* GENERAL SECTION CONTAINER */
+        .section-container {
+            position: relative;
+            padding: 6rem 6%;
+            max-width: 1300px;
+            margin: 0 auto;
+            z-index: 2;
+        }
+
+        .section-header-center {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 4rem;
+        }
+
+        .section-tag {
+            display: inline-block;
+            padding: 0.35rem 0.9rem;
+            background: rgba(79, 70, 229, 0.08);
+            color: var(--accent-blue);
+            border-radius: 50px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-size: clamp(2rem, 3.2vw, 2.75rem);
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .section-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            line-height: 1.65;
+        }
+
+        /* VALUE PROPS / FEATURES GRID */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.75rem;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            padding: 2.25rem 2rem;
+            border-radius: 24px;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .feature-card:hover {
+            border-color: rgba(79, 70, 229, 0.25);
+            box-shadow: 0 20px 40px rgba(79, 70, 229, 0.08);
+            transform: translateY(-4px);
+        }
+
+        .feature-icon-box {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: grid;
+            place-items: center;
+            font-size: 1.6rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.12), rgba(139, 92, 246, 0.12));
+        }
+
+        .feature-card h3 {
+            font-size: 1.2rem;
+            font-weight: 800;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.3px;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.65;
+        }
+
+        /* STEPS GRID (HOW IT WORKS) */
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .step-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            padding: 2.5rem 2rem;
+            border-radius: 24px;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+            position: relative;
+        }
+
+        .step-card:hover {
+            border-color: rgba(79, 70, 229, 0.3);
+            box-shadow: 0 20px 40px rgba(79, 70, 229, 0.08);
+            transform: translateY(-4px);
+        }
+
+        .step-number {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--accent-blue);
+            margin-bottom: 1.25rem;
+            display: inline-block;
+            background: rgba(79, 70, 229, 0.08);
+            padding: 0.45rem 0.9rem;
+            border-radius: 12px;
+        }
+
+        .step-card h3 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            margin-bottom: 0.75rem;
+        }
+
+        .step-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.65;
+        }
+
+        /* STATS COUNTER BANNER */
+        .stats-banner {
+            background: var(--accent);
+            border-radius: 28px;
+            padding: 3.5rem 2.5rem;
+            color: white;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            text-align: center;
+            box-shadow: 0 25px 60px rgba(15, 23, 42, 0.2);
+            margin: 2rem 0;
+        }
+
+        .stat-item strong {
+            display: block;
+            font-size: clamp(2.2rem, 3.5vw, 3rem);
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, #fff, #93c5fd);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.35rem;
+        }
+
+        .stat-item span {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        /* REVIEWS GRID */
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .review-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            padding: 2.25rem;
+            border-radius: 24px;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .review-card:hover {
+            border-color: rgba(79, 70, 229, 0.25);
+            box-shadow: 0 20px 40px rgba(79, 70, 229, 0.08);
+            transform: translateY(-4px);
+        }
+
+        .stars-row {
+            color: #f59e0b;
+            font-size: 1.1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .review-text {
+            font-size: 1rem;
+            color: var(--text-primary);
+            line-height: 1.65;
+            margin-bottom: 2rem;
+            font-style: italic;
+        }
+
+        .reviewer-info {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .reviewer-avatar {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            color: white;
+            font-weight: 800;
+            font-size: 0.9rem;
+            flex: none;
+        }
+
+        .reviewer-details h4 {
+            font-size: 0.95rem;
+            font-weight: 800;
+        }
+
+        .reviewer-details span {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* FAQ SECTION */
+        .faq-list {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .faq-item {
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .faq-question {
+            width: 100%;
+            padding: 1.25rem 1.5rem;
+            text-align: left;
+            background: transparent;
+            border: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        .faq-icon {
+            font-size: 1.25rem;
+            transition: transform 0.2s ease;
+        }
+
+        .faq-item.open .faq-icon {
+            transform: rotate(45deg);
+        }
+
+        .faq-answer {
+            display: none;
+            padding: 0 1.5rem 1.25rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.65;
+        }
+
+        .faq-item.open .faq-answer {
+            display: block;
+        }
+
+        /* BOTTOM CTA BANNER */
+        .bottom-cta-banner {
+            background: linear-gradient(135deg, #0f172a, #1e1b4b);
+            border-radius: 32px;
+            padding: 4.5rem 3rem;
+            color: white;
+            text-align: center;
+            box-shadow: 0 30px 70px rgba(15, 23, 42, 0.25);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 4rem;
+        }
+
+        .bottom-cta-banner h2 {
+            font-size: clamp(2rem, 3.5vw, 3rem);
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 1rem;
+        }
+
+        .bottom-cta-banner p {
+            color: #cbd5e1;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.65;
+        }
+
+        .banner-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        /* FOOTER */
+        footer {
+            background: rgba(255, 255, 255, 0.85);
+            border-top: 1px solid var(--border-color);
+            padding: 4rem 6% 2.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1.5fr repeat(3, 1fr);
+            gap: 3rem;
+            max-width: 1300px;
+            margin: 0 auto 3rem;
+        }
+
+        .footer-brand p {
+            color: var(--text-secondary);
+            font-size: 0.92rem;
+            margin-top: 1rem;
+            max-width: 320px;
+            line-height: 1.6;
+        }
+
+        .footer-col h4 {
+            font-size: 0.95rem;
+            font-weight: 800;
+            margin-bottom: 1.25rem;
+            color: var(--text-primary);
+        }
+
+        .footer-col ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .footer-col ul li a, .footer-col ul li button {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            background: none;
+            border: none;
+            cursor: pointer;
+            text-align: left;
+            padding: 0;
+            transition: var(--transition);
+        }
+
+        .footer-col ul li a:hover, .footer-col ul li button:hover {
+            color: var(--accent-blue);
+        }
+
+        .footer-bottom {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(226, 232, 240, 0.7);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        /* ==========================================================================
+           AUTH FORMS & WRAPPERS
+           ========================================================================== */
+        .auth-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 100px);
+            padding: 3rem 1.5rem;
+        }
+
+        .auth-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 1);
+            padding: 2.75rem 2.5rem;
+            border-radius: 28px;
+            width: 100%;
+            max-width: 520px;
+            box-shadow: 0 25px 60px rgba(15, 23, 42, 0.08);
+            position: relative;
+            z-index: 10;
+        }
+
+        .auth-card h2 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-bottom: 0.4rem;
+            letter-spacing: -0.5px;
+        }
+
+        .auth-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .back-link {
+            background: transparent;
+            border: none;
+            color: var(--accent-blue);
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-bottom: 1.25rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0;
+        }
+
+        .role-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .role-select-btn {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 1.4rem 1rem;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .role-select-btn span.role-icon {
+            font-size: 1.8rem;
+        }
+
+        .role-select-btn:hover {
+            border-color: var(--accent-blue);
+            background: rgba(79, 70, 229, 0.04);
+            color: var(--accent-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(79, 70, 229, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 0.45rem;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid var(--border-color);
+            padding: 0.85rem 1rem;
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 4px var(--accent-glow);
+            background: #ffffff;
+        }
+
+        .password-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .password-wrapper input {
+            padding-right: 46px !important;
+        }
+
+        .toggle-password-btn {
+            position: absolute;
+            right: 12px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            user-select: none;
+        }
+
+        .toggle-password-btn:hover {
+            color: var(--text-primary);
+            transform: scale(1.1);
+        }
+
+        .auth-submit {
+            width: 100%;
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.95rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 0.5rem;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
+        }
+
+        .auth-submit:hover {
+            background: #1e293b;
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(15, 23, 42, 0.22);
+        }
+
+        .auth-footer {
+            margin-top: 1.75rem;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+        }
+
+        .auth-footer a {
+            color: var(--accent-blue);
+            cursor: pointer;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* ==========================================================================
+           RESPONSIVE MEDIA QUERIES
+           ========================================================================== */
+        @media (max-width: 1024px) {
+            .hero-section {
+                grid-template-columns: 1fr;
+                padding-top: 3rem;
+                padding-bottom: 4rem;
+                text-align: center;
+            }
+            .hero-content {
+                align-items: center;
+                text-align: center;
+            }
+            .hero-cta-group {
+                justify-content: center;
+            }
+            .hero-trust-row {
+                justify-content: center;
+            }
+            .footer-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links, .nav-actions .nav-login-btn {
+                display: none;
+            }
+            .hamburger-btn {
+                display: block;
+            }
+            .hero-graphic-container {
+                height: 420px;
+            }
+            .glass-orb {
+                width: 280px;
+                height: 280px;
+            }
+            .creator-node {
+                padding: 0.65rem 0.85rem;
+            }
+            .creator-node img {
+                width: 44px;
+                height: 44px;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            .section-container {
+                padding: 4rem 6%;
+            }
+            .auth-card {
+                padding: 2rem 1.5rem;
+            }
+        }
+    </style>
+
+    <!-- UI Navigation Script -->
+    <script>
+        function switchView(viewId) {
+            const views = document.querySelectorAll('.view-container');
+            views.forEach(view => {
+                view.classList.remove('active');
+                view.style.display = 'none';
+            });
+
+            const targetView = document.getElementById(viewId);
+            if (targetView) {
+                targetView.classList.add('active');
+                targetView.style.display = 'block';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            // Close mobile menu if open
+            const mob = document.getElementById('mobileNav');
+            if (mob) mob.classList.remove('open');
+        }
+
+        function scrollToSection(sectionId) {
+            // If not on home-view, switch to home view first
+            const homeView = document.getElementById('home-view');
+            if (!homeView.classList.contains('active')) {
+                switchView('home-view');
+                setTimeout(() => {
+                    const el = document.getElementById(sectionId);
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+            } else {
+                const el = document.getElementById(sectionId);
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            const mob = document.getElementById('mobileNav');
+            if (mob) mob.classList.remove('open');
+        }
+
+        function toggleMobileNav() {
+            const mob = document.getElementById('mobileNav');
+            if (mob) mob.classList.toggle('open');
+        }
+
+        function toggleFaq(btn) {
+            const item = btn.closest('.faq-item');
+            if (item) {
+                item.classList.toggle('open');
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <!-- Ambient Floating Background Graphics -->
+    <div class="bg-graphics">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav>
+        <div class="logo-wrapper" onclick="switchView('home-view')">
+            <div class="logo-icon">B</div>
+            <div class="logo">BrandLink</div>
+        </div>
+        <ul class="nav-links">
+            <li><button type="button" onclick="scrollToSection('features')">Features</button></li>
+            <li><button type="button" onclick="scrollToSection('how-it-works')">How It Works</button></li>
+            <li><button type="button" onclick="scrollToSection('stats')">Metrics</button></li>
+            <li><button type="button" onclick="scrollToSection('reviews')">Reviews</button></li>
+            <li><button type="button" onclick="scrollToSection('faq')">FAQ</button></li>
+        </ul>
+        <div class="nav-actions">
+            <button type="button" class="nav-login-btn" onclick="switchView('login-role-view')">Sign In</button>
+            <button type="button" class="nav-cta" onclick="switchView('auth-choice-view')">Get Started <span>→</span></button>
+            <button type="button" class="hamburger-btn" onclick="toggleMobileNav()" aria-label="Toggle Menu">☰</button>
+        </div>
+    </nav>
+
+    <!-- Mobile Nav Drawer -->
+    <div id="mobileNav" class="mobile-nav">
+        <button type="button" onclick="scrollToSection('features')">Features</button>
+        <button type="button" onclick="scrollToSection('how-it-works')">How It Works</button>
+        <button type="button" onclick="scrollToSection('stats')">Metrics</button>
+        <button type="button" onclick="scrollToSection('reviews')">Reviews</button>
+        <button type="button" onclick="scrollToSection('faq')">FAQ</button>
+        <button type="button" onclick="switchView('login-role-view')" style="color: var(--accent-blue);">Sign In</button>
+        <button type="button" class="nav-cta" onclick="switchView('auth-choice-view')" style="width: 100%; justify-content: center; margin-top: 0.5rem;">Get Started Free</button>
+    </div>
+
+    <!-- =========================================================================
+         VIEW 1: COMPLETE COMPREHENSIVE HOME PAGE
+         ========================================================================= -->
+    <div id="home-view" class="view-container active" style="display: block;">
+
+        <!-- HERO SECTION -->
+        <section class="hero-section">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    ✨ Trusted Collaboration Platform
+                </div>
+                <h1>Connect directly with verified <span>brands & influencers</span></h1>
+                <p>Empower your influencer marketing with authentic talent matching, instant campaign briefs, and transparent escrow milestone workflows.</p>
+                <div class="hero-cta-group">
+                    <button type="button" class="cta-primary" onclick="switchView('auth-choice-view')">Get Started Free</button>
+                    <button type="button" class="cta-secondary" onclick="scrollToSection('how-it-works')">Explore How It Works</button>
+                </div>
+                <div class="hero-trust-row">
+                    <div class="trust-avatars">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="User">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" alt="User">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80" alt="User">
+                    </div>
+                    <div class="trust-text">
+                        <strong>10,000+</strong> verified creators & brands actively collaborating.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hero Graphic Collage -->
+            <div class="hero-graphic-container">
+                <div class="glass-orb"></div>
+                <div class="creator-node node-1">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Creator">
+                    <div class="creator-info">
+                        <h4>Aarav Mehta</h4>
+                        <span>Tech Vlogger · 120K</span>
+                    </div>
+                </div>
+                <div class="creator-node node-2">
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80" alt="Gamer">
+                    <div class="creator-info">
+                        <h4>Rohan Verma</h4>
+                        <span>Tech & Gaming Reviewer</span>
+                    </div>
+                </div>
+                <div class="floating-badge-card card-analytics">📈 98% Match Rate</div>
+                <div class="floating-badge-card card-contract">🛡️ Escrow Protected</div>
+            </div>
+        </section>
+
+        <!-- Social Proof Brand Logos -->
+        <div class="social-proof">
+            <div class="social-proof-label">Trusted by leading modern growth brands & agencies</div>
+            <div class="brand-logos">
+                <span>⚡ NOVATECH</span>
+                <span>💎 LUMOS MEDIA</span>
+                <span>🚀 VORTEX LABS</span>
+                <span>✨ APEX CREATIVE</span>
+                <span>🌐 ZENITH DIGITAL</span>
+            </div>
+        </div>
+
+        <!-- FEATURES SECTION -->
+        <section id="features" class="section-container">
+            <div class="section-header-center">
+                <span class="section-tag">Core Capabilities</span>
+                <h2 class="section-title">Engineered for seamless brand & creator partnerships</h2>
+                <p class="section-subtitle">Everything you need to discover, negotiate, execute, and settle influencer marketing campaigns without friction.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon-box">🛡️</div>
+                    <h3>Escrow Payment Protection</h3>
+                    <p>Milestone-based fund holding gives brands complete quality assurance while guaranteeing creators automated payouts upon deliverable approval.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-box">🎯</div>
+                    <h3>Targeted Creator Discovery</h3>
+                    <p>Filter verified creators by exact audience niches, engagement rates, primary social platforms, starting post rates, and geographic location.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-box">⚡</div>
+                    <h3>Direct 1-on-1 Campaign Briefs</h3>
+                    <p>Found the perfect creator? Launch direct custom campaign offers with pre-filled parameters with a single click from the creator's discovery card.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-box">📊</div>
+                    <h3>Real-Time Campaign Tracking</h3>
+                    <p>Monitor campaign deadlines, creator submissions, live deliverables, and budget allocation from a centralized dashboard command center.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- HOW IT WORKS SECTION -->
+        <section id="how-it-works" class="section-container" style="background: rgba(248, 250, 252, 0.5); border-radius: 32px; border: 1px solid var(--border-color);">
+            <div class="section-header-center">
+                <span class="section-tag">Step-by-Step Workflow</span>
+                <h2 class="section-title">How BrandLink Works</h2>
+                <p class="section-subtitle">A transparent 3-step pipeline designed for clarity, safety, and scale.</p>
+            </div>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">01</div>
+                    <h3>Create Role Profile</h3>
+                    <p>Sign up securely as a Brand or Influencer. Creators publish their verified audience metrics, rates, and portfolio to become instantly discoverable.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">02</div>
+                    <h3>Discover & Propose</h3>
+                    <p>Brands discover creators by niche or publish open campaign briefs. Direct campaign proposals pre-populate deliverables and compensation.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">03</div>
+                    <h3>Execute & Settle</h3>
+                    <p>Collaborate with integrated messaging, submit content drafts for approval, and release guaranteed escrow payments smoothly.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- STATS COUNTER BANNER -->
+        <section id="stats" class="section-container">
+            <div class="stats-banner">
+                <div class="stat-item">
+                    <strong>10,000+</strong>
+                    <span>Verified Creators</span>
+                </div>
+                <div class="stat-item">
+                    <strong>500+</strong>
+                    <span>Brand Campaigns</span>
+                </div>
+                <div class="stat-item">
+                    <strong>₹2.5 Cr+</strong>
+                    <span>Creator Payouts</span>
+                </div>
+                <div class="stat-item">
+                    <strong>99.4%</strong>
+                    <span>On-Time Milestone Rate</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- REVIEWS SECTION -->
+        <section id="reviews" class="section-container">
+            <div class="section-header-center">
+                <span class="section-tag">Community Testimonials</span>
+                <h2 class="section-title">Loved by brands & top creators</h2>
+                <p class="section-subtitle">Real feedback from marketers and influencers who scaled their partnerships on BrandLink.</p>
+            </div>
+            <div class="reviews-grid">
+                <div class="review-card">
+                    <div>
+                        <div class="stars-row">★★★★★</div>
+                        <p class="review-text">"BrandLink made scaling our micro-influencer strategy effortless. The direct campaign creation from creator profiles saved our marketing team over 20 hours per week."</p>
+                    </div>
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar" style="background: linear-gradient(135deg, #06b6d4, #4f46e5)">AM</div>
+                        <div class="reviewer-details">
+                            <h4>Aarav Mehta</h4>
+                            <span>Head of Marketing, NovaTech</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="review-card">
+                    <div>
+                        <div class="stars-row">★★★★★</div>
+                        <p class="review-text">"The cleanest creator platform I've used. I published my profile with rates and engagement metrics, and secured two direct brand briefs within 48 hours."</p>
+                    </div>
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar" style="background: linear-gradient(135deg, #ec4899, #8b5cf6)">AS</div>
+                        <div class="reviewer-details">
+                            <h4>Ananya Sharma</h4>
+                            <span>Tech & Lifestyle Creator (94K)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="review-card">
+                    <div>
+                        <div class="stars-row">★★★★★</div>
+                        <p class="review-text">"Having escrow milestones built into every brief eliminates payment anxiety for creators and gives brands complete confidence in deliverables."</p>
+                    </div>
+                    <div class="reviewer-info">
+                        <div class="reviewer-avatar" style="background: linear-gradient(135deg, #10b981, #06b6d4)">RK</div>
+                        <div class="reviewer-details">
+                            <h4>Rohan Kapoor</h4>
+                            <span>Founder, Apex Media Agency</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ SECTION -->
+        <section id="faq" class="section-container">
+            <div class="section-header-center">
+                <span class="section-tag">Got Questions?</span>
+                <h2 class="section-title">Frequently Asked Questions</h2>
+                <p class="section-subtitle">Everything you need to know about getting started on BrandLink.</p>
+            </div>
+            <div class="faq-list">
+                <div class="faq-item open">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        <span>How does BrandLink ensure safe payments?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        BrandLink uses milestone-based escrow contracts. Brands fund the campaign budget upon creating the brief, and funds are held securely until deliverables are submitted, reviewed, and approved.
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        <span>How do creators become visible to brands?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        After signing in as a creator, navigate to the "My Profile" tab. Fill in your handles, niche, followers count, engagement rate, starting price, and bio. Once saved, your profile appears live in the Brand Discovery feed.
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        <span>Can brands collaborate with specific individual creators?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        Yes! In Brand Discovery, clicking "Create Campaign with Creator" opens the campaign builder pre-populated with that creator's details for instant direct outreach.
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)">
+                        <span>Is it free to register on BrandLink?</span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        Yes, registration and profile publishing are completely free for both creators and brand accounts.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- BOTTOM CONVERSION CTA BANNER -->
+        <section class="section-container">
+            <div class="bottom-cta-banner">
+                <h2>Ready to power your next collaboration?</h2>
+                <p>Join thousands of top creators and growth brands closing partnerships on BrandLink today.</p>
+                <div class="banner-buttons">
+                    <button type="button" class="cta-primary" onclick="switchView('register-role-view')" style="background:#fff; color:#0f172a;">Create Free Account</button>
+                    <button type="button" class="cta-secondary" onclick="switchView('login-role-view')" style="background:transparent; border-color:rgba(255,255,255,0.4); color:#fff;">Sign In to Dashboard</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer>
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="logo-wrapper">
+                        <div class="logo-icon">B</div>
+                        <div class="logo">BrandLink</div>
+                    </div>
+                    <p>The trusted platform uniting modern brands with high-impact verified influencers for transparent, escrow-secured partnerships.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Platform</h4>
+                    <ul>
+                        <li><button type="button" onclick="scrollToSection('features')">Features</button></li>
+                        <li><button type="button" onclick="scrollToSection('how-it-works')">How It Works</button></li>
+                        <li><button type="button" onclick="scrollToSection('stats')">Platform Stats</button></li>
+                        <li><button type="button" onclick="scrollToSection('reviews')">Reviews</button></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Portals</h4>
+                    <ul>
+                        <li><button type="button" onclick="switchView('brand-login-view')">Brand Portal Login</button></li>
+                        <li><button type="button" onclick="switchView('influencer-login-view')">Creator Portal Login</button></li>
+                        <li><button type="button" onclick="switchView('brand-register-view')">Register as Brand</button></li>
+                        <li><button type="button" onclick="switchView('influencer-register-view')">Register as Creator</button></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Support & Legal</h4>
+                    <ul>
+                        <li><button type="button" onclick="scrollToSection('faq')">FAQ</button></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Escrow Security</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div>© 2026 BrandLink Platform Inc. All rights reserved.</div>
+                <div>Designed with Glassmorphism & Plus Jakarta Sans.</div>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- =========================================================================
+         VIEW 2: GET STARTED CHOICE
+         ========================================================================= -->
+    <div id="auth-choice-view" class="view-container">
+        <div class="auth-wrapper">
+            <div class="auth-card" style="text-align: center;">
+                <button class="back-link" onclick="switchView('home-view')" style="float: left;">← Home</button>
+                <div style="clear: both; width: 56px; height: 56px; border-radius: 16px; background: rgba(79, 70, 229, 0.1); color: var(--accent-blue); display: grid; place-items: center; font-size: 1.6rem; margin: 0 auto 1.25rem;">✨</div>
+                <h2>Join BrandLink</h2>
+                <p>Select whether you'd like to create a new account or log in to your existing portal.</p>
+                <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem;">
+                    <button type="button" class="auth-submit" onclick="switchView('register-role-view')">Create New Account</button>
+                    <button type="button" class="cta-secondary" onclick="switchView('login-role-view')" style="width: 100%; border-radius: 12px; padding: 0.95rem;">Sign In to Existing Account</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         VIEW 3: REGISTER ROLE SELECTION
+         ========================================================================= -->
+    <div id="register-role-view" class="view-container">
+        <div class="auth-wrapper">
+            <div class="auth-card" style="text-align: center;">
+                <button class="back-link" onclick="switchView('auth-choice-view')" style="float: left;">← Back</button>
+                <h2 style="clear: both; margin-top: 0.5rem;">Join as Brand or Creator</h2>
+                <p>Select your account type to set up your profile.</p>
+                <div class="role-options">
+                    <button type="button" class="role-select-btn" onclick="switchView('brand-register-view')">
+                        <span class="role-icon">🏢</span>
+                        <span>I'm a Brand / Agency</span>
+                    </button>
+                    <button type="button" class="role-select-btn" onclick="switchView('influencer-register-view')">
+                        <span class="role-icon">✨</span>
+                        <span>I'm a Creator</span>
+                    </button>
+                </div>
+                <div class="auth-footer" style="justify-content: center; margin-top: 1rem;">
+                    <span>Already have an account? <a onclick="switchView('login-role-view')">Sign In</a></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         VIEW 4: BRAND REGISTRATION FORM
+         ========================================================================= -->
+    <div id="brand-register-view" class="view-container">
+        <div class="auth-wrapper">
+            <div class="auth-card">
+                <button class="back-link" onclick="switchView('register-role-view')">← Back to Roles</button>
+                <h2>Brand Account Setup</h2>
+                <p>Create your organization profile to discover creators & launch campaigns.</p>
+                <form id="brandRegisterForm" onsubmit="handleRegistration(event, 'brand')">
+                    <div class="form-group">
+                        <label>Company / Brand Name *</label>
+                        <input type="text" id="regBrandCompany" required placeholder="e.g. NovaTech Labs">
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Person Name *</label>
+                        <input type="text" id="regBrandContact" required placeholder="e.g. Priya Sharma">
+                    </div>
+                    <div class="form-group">
+                        <label>Work Email Address *</label>
+                        <input type="email" id="regBrandEmail" required placeholder="name@company.com" autocomplete="email">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Industry Niche *</label>
+                            <select id="regBrandIndustry" required>
+                                <option value="Tech & SaaS">Technology & SaaS</option>
+                                <option value="Fashion & Apparel">Fashion & Apparel</option>
+                                <option value="Beauty & Skincare">Beauty & Skincare</option>
+                                <option value="Fitness & Health">Fitness & Health</option>
+                                <option value="Food & Beverage">Food & Beverage</option>
+                                <option value="Gaming & Esports">Gaming & Esports</option>
+                                <option value="Lifestyle">Lifestyle</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Website</label>
+                            <input type="text" id="regBrandWebsite" placeholder="https://company.com">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Create Password *</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="regBrandPass" required placeholder="At least 6 characters" autocomplete="new-password">
+                            <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('regBrandPass', this)" title="Show/Hide Password" aria-label="Toggle password visibility">👁️</button>
+                        </div>
+                    </div>
+                    <button type="submit" class="auth-submit">Complete Brand Registration</button>
+                </form>
+                <div class="auth-footer">
+                    <span>Already registered? <a onclick="switchView('brand-login-view')">Sign In</a></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         VIEW 5: INFLUENCER REGISTRATION FORM
+         ========================================================================= -->
+    <div id="influencer-register-view" class="view-container">
+        <div class="auth-wrapper">
+            <div class="auth-card">
+                <button class="back-link" onclick="switchView('register-role-view')">← Back to Roles</button>
+                <h2>Creator Account Setup</h2>
+                <p>Register your creator profile to connect with top paying brands.</p>
+                <form id="influencerRegisterForm" onsubmit="handleRegistration(event, 'influencer')">
+                    <div class="form-group">
+                        <label>Full Name / Creator Name *</label>
+                        <input type="text" id="regInfName" required placeholder="e.g. Aarav Mehta">
+                    </div>
+                    <div class="form-group">
+                        <label>Account Email Address *</label>
+                        <input type="email" id="regInfEmail" required placeholder="aarav@creator.com" autocomplete="email">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Primary Platform *</label>
+                            <select id="regInfPlatform" required>
+                                <option value="Instagram">Instagram</option>
+                                <option value="YouTube">YouTube</option>
+                                <option value="Instagram + YouTube">Instagram + YouTube</option>
+                                <option value="X / Twitter">X / Twitter</option>
+                                <option value="LinkedIn">LinkedIn</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Social Handle *</label>
+                            <input type="text" id="regInfHandle" required placeholder="@yourhandle">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Followers / Subscriber Reach *</label>
+                        <input type="text" id="regInfReach" required placeholder="e.g. 25K or 150K">
+                    </div>
+                    <div class="form-group">
+                        <label>Create Password *</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="regInfPass" required placeholder="At least 6 characters" autocomplete="new-password">
+                            <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('regInfPass', this)" title="Show/Hide Password" aria-label="Toggle password visibility">👁️</button>
+                        </div>
+                    </div>
+                    <button type="submit" class="auth-submit">Complete Creator Registration</button>
+                </form>
+                <div class="auth-footer">
+                    <span>Already registered? <a onclick="switchView('influencer-login-view')">Sign In</a></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         VIEW 6: LOGIN ROLE SELECTION
+         ========================================================================= -->
+    <div id="login-role-view" class="view-container">
+        <div class="auth-wrapper">
+            <div class="auth-card" style="text-align: center;">
+                <button class="back-link" onclick="switchView('home-view')" style="float: left;">← Home</button>
+                <h2 style="clear: both; margin-top: 0.5rem;">Choose Portal Login</h2>
+                <p>Select your account type to proceed to your dedicated portal.</p>
+                <div class="role-options">
+                    <button type="button" class="role-select-btn" onclick="switchView('brand-login-view')">
+                        <span class="role-icon">🏢</span>
+                        <span>Brand Portal</span>
+                    </button>
+                    <button type="button" class="role-select-btn" onclick="switchView('influencer-login-view')">
+                        <span class="role-icon">✨</span>
+                        <span>Creator Portal</span>
+                    </button>
+                </div>
+                <div class="auth-footer" style="justify-content: center; margin-top: 1rem;">
+                    <span>Don't have an account? <a onclick="switchView('register-role-view')">Register</a></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         VIEW 7: BRAND LOGIN
+         ========================================================================= -->
+    <div id="brand-login-view" class="view-container">
+        <div class="auth-wrapper">
+            <div class="auth-card">
+                <button class="back-link" onclick="switchView('login-role-view')">← Back to Portals</button>
+                <h2>🏢 Brand Portal Sign In</h2>
+                <p>Access your Brand Dashboard, manage campaigns and discover creators.</p>
+                <form id="brandLoginForm" onsubmit="handleSupabaseLogin(event, 'brand')">
+                    <div class="form-group">
+                        <label>Brand Work Email</label>
+                        <input type="email" id="brandEmail" required placeholder="Enter your registered brand email" autocomplete="email">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="brandPassword" required placeholder="Enter your password" autocomplete="current-password">
+                            <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('brandPassword', this)" title="Show/Hide Password" aria-label="Toggle password visibility">👁️</button>
+                        </div>
+                    </div>
+                    <button type="submit" class="auth-submit">Sign In to Brand Dashboard</button>
+                </form>
+                <div class="auth-footer">
+                    <a onclick="switchView('forgot-password-view')">Forgot password?</a>
+                    <a onclick="switchView('brand-register-view')">Register as Brand</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         VIEW 8: INFLUENCER LOGIN
+         ========================================================================= -->
+    <div id="influencer-login-view" class="view-container">
+        <div class="auth-wrapper">
+            <div class="auth-card">
+                <button class="back-link" onclick="switchView('login-role-view')">← Back to Portals</button>
+                <h2>✨ Creator Portal Sign In</h2>
+                <p>Access your Creator Dashboard, manage your public profile & view brand briefs.</p>
+                <form id="influencerLoginForm" onsubmit="handleSupabaseLogin(event, 'influencer')">
+                    <div class="form-group">
+                        <label>Creator Email</label>
+                        <input type="email" id="influencerEmail" required placeholder="Enter your registered creator email" autocomplete="email">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="influencerPassword" required placeholder="Enter your password" autocomplete="current-password">
+                            <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('influencerPassword', this)" title="Show/Hide Password" aria-label="Toggle password visibility">👁️</button>
+                        </div>
+                    </div>
+                    <button type="submit" class="auth-submit">Sign In to Creator Dashboard</button>
+                </form>
+                <div class="auth-footer">
+                    <a onclick="switchView('forgot-password-view')">Forgot password?</a>
+                    <a onclick="switchView('influencer-register-view')">Register as Creator</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         VIEW 9: FORGOT PASSWORD
+         ========================================================================= -->
+    <div id="forgot-password-view" class="view-container">
+        <div class="auth-wrapper">
+            <div class="auth-card">
+                <button class="back-link" onclick="switchView('login-role-view')">← Back to Login</button>
+                <h2>Reset Password</h2>
+                <p>Enter your account email to receive a secure reset link.</p>
+                <form onsubmit="handlePasswordResetRequest(event)">
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="resetEmail" required placeholder="Enter your registered email" autocomplete="email">
+                    </div>
+                    <button type="submit" class="auth-submit">Send Reset Link</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         VIEW 10: UPDATE PASSWORD
+         ========================================================================= -->
+    <div id="update-password-view" class="view-container">
+        <div class="auth-wrapper">
+            <div class="auth-card">
+                <h2>Set New Password</h2>
+                <p>Please enter your new secure password below.</p>
+                <form onsubmit="handlePasswordUpdate(event)">
+                    <div class="form-group">
+                        <label>New Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="newPassword" required placeholder="Enter new password (min. 6 characters)" autocomplete="new-password">
+                            <button type="button" class="toggle-password-btn" onclick="togglePasswordVisibility('newPassword', this)" title="Show/Hide Password" aria-label="Toggle password visibility">👁️</button>
+                        </div>
+                    </div>
+                    <button type="submit" class="auth-submit">Update Password</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase Auth Handlers & Password Logic -->
+    <script>
+        let supabaseClient = null;
+
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                btn.textContent = '👁️';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                const SUPABASE_URL = 'https://bqcqajskaigyhnsrmdos.supabase.co';
+                const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJxY3FhanNrYWlneWhuc3JtZG9zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1NzUzNTIsImV4cCI6MjEwNTE1MTM1Mn0.G3xhVUDSS-AWbEgGiLJEadJNX8SfttbChpCVao1qJxI';
+
+                if (window.supabase) {
+                    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    console.log("Supabase successfully initialized.");
+
+                    supabaseClient.auth.onAuthStateChange((event, session) => {
+                        if (event === 'PASSWORD_RECOVERY') {
+                            console.log("Password recovery mode triggered");
+                            switchView('update-password-view');
+                        }
+                    });
+
+                } else {
+                    console.warn("Supabase SDK did not load. Check network connection.");
+                }
+            } catch (error) {
+                console.error("Error setting up Supabase:", error);
+            }
+        });
+
+        async function handleRegistration(event, role) {
+            event.preventDefault();
+            if (!supabaseClient) {
+                alert("Database connection is currently unavailable."); return;
+            }
+
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerText;
+            submitBtn.innerText = "Registering...";
+            submitBtn.disabled = true;
+
+            const targetRole = String(role || 'brand').toLowerCase();
+            let email, password, userMetadata;
+            if (targetRole === 'brand') {
+                email = document.getElementById('regBrandEmail').value.trim();
+                password = document.getElementById('regBrandPass').value;
+                userMetadata = {
+                    role: 'brand',
+                    company_name: document.getElementById('regBrandCompany').value.trim(),
+                    contact_person: document.getElementById('regBrandContact').value.trim(),
+                    industry: document.getElementById('regBrandIndustry').value,
+                    website: document.getElementById('regBrandWebsite').value.trim()
+                };
+            } else {
+                email = document.getElementById('regInfEmail').value.trim();
+                password = document.getElementById('regInfPass').value;
+                userMetadata = {
+                    role: 'influencer',
+                    full_name: document.getElementById('regInfName').value.trim(),
+                    platform: document.getElementById('regInfPlatform').value,
+                    handle: document.getElementById('regInfHandle').value.trim(),
+                    reach: document.getElementById('regInfReach').value.trim()
+                };
+            }
+
+            try {
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: { data: userMetadata }
+                });
+
+                if (error) {
+                    alert(`Registration failed: ${error.message}`);
+                } else {
+                    localStorage.setItem('brandlink_role', targetRole);
+                    localStorage.setItem('brandlink_email', email);
+                    alert(`Registration successful! You can now log in to the ${targetRole === 'brand' ? 'Brand' : 'Creator'} Portal.`);
+                    switchView(targetRole === 'brand' ? 'brand-login-view' : 'influencer-login-view');
+                    if (targetRole === 'brand') {
+                        const bEmail = document.getElementById('brandEmail');
+                        if (bEmail) bEmail.value = email;
+                    } else {
+                        const infEmail = document.getElementById('influencerEmail');
+                        if (infEmail) infEmail.value = email;
+                    }
+                    event.target.reset();
+                }
+            } catch (err) {
+                console.error("Registration error:", err);
+                alert("An unexpected error occurred during registration.");
+            } finally {
+                submitBtn.innerText = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        async function handleSupabaseLogin(event, role) {
+            event.preventDefault();
+            if (!supabaseClient) {
+                alert("Database connection is currently unavailable."); return;
+            }
+
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerText;
+            submitBtn.innerText = "Signing in...";
+            submitBtn.disabled = true;
+
+            const chosenRole = String(role || 'brand').toLowerCase();
+            const emailId = chosenRole === 'brand' ? 'brandEmail' : 'influencerEmail';
+            const passId = chosenRole === 'brand' ? 'brandPassword' : 'influencerPassword';
+
+            const email = document.getElementById(emailId).value.trim();
+            const password = document.getElementById(passId).value;
+
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password,
+                });
+
+                if (error) {
+                    alert(`Login Failed: ${error.message}`);
+                } else {
+                    // Set active session role explicitly to the portal chosen by the user
+                    localStorage.setItem('brandlink_role', chosenRole);
+                    localStorage.setItem('brandlink_email', data.user?.email || email);
+
+                    // Sync user_metadata if it was missing or different
+                    if (data.user && data.user.user_metadata?.role !== chosenRole) {
+                        try {
+                            await supabaseClient.auth.updateUser({
+                                data: {
+                                    ...(data.user.user_metadata || {}),
+                                    role: chosenRole
+                                }
+                            });
+                        } catch (syncErr) {
+                            console.warn("User role metadata sync notice:", syncErr);
+                        }
+                    }
+
+                    window.location.href = 'dashboard.html';
+                }
+            } catch (err) {
+                console.error("Login error:", err);
+                alert("An unexpected error occurred during login.");
+            } finally {
+                submitBtn.innerText = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        async function handlePasswordResetRequest(event) {
+            event.preventDefault();
+            if (!supabaseClient) {
+                alert("Database connection is currently unavailable."); return;
+            }
+
+            const email = document.getElementById('resetEmail').value.trim();
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerText;
+            submitBtn.innerText = "Sending...";
+            submitBtn.disabled = true;
+
+            try {
+                const currentUrl = window.location.href.split('?')[0].split('#')[0];
+                const { data, error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+                    redirectTo: currentUrl,
+                });
+
+                if (error) {
+                    alert(`Failed to send link: ${error.message}`);
+                } else {
+                    alert("A password reset link has been sent to your email.");
+                    switchView('login-role-view');
+                    event.target.reset();
+                }
+            } catch (err) {
+                alert("An unexpected error occurred.");
+            } finally {
+                submitBtn.innerText = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        async function handlePasswordUpdate(event) {
+            event.preventDefault();
+            if (!supabaseClient) return;
+
+            const newPassword = document.getElementById('newPassword').value;
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerText;
+            submitBtn.innerText = "Updating...";
+            submitBtn.disabled = true;
+
+            try {
+                const { data, error } = await supabaseClient.auth.updateUser({
+                    password: newPassword
+                });
+
+                if (error) {
+                    alert(`Failed to update password: ${error.message}`);
+                } else {
+                    alert("Your password has been successfully updated! You can now sign in.");
+                    switchView('login-role-view');
+                    event.target.reset();
+                }
+            } catch (err) {
+                alert("An unexpected error occurred.");
+            } finally {
+                submitBtn.innerText = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
